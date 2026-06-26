@@ -279,10 +279,34 @@
     animation: shimmer 1.2s infinite;
     border-radius: 4px; height: 14px;
   }
+
+  /* ── PROGRESS LOADER ── */
+  .load-progress-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 4px; background: rgba(255,255,255,0.15);
+    transition: opacity 0.4s;
+  }
+  .load-progress-wrap.hidden { opacity: 0; pointer-events: none; }
+  .load-progress-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #38bdf8, #2563eb, #7c3aed);
+    background-size: 200% 100%;
+    animation: progressShine 1.2s linear infinite;
+    transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
+  }
+  @keyframes progressShine {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 </style>
 </head>
 <body>
+
+<!-- PROGRESS BAR -->
+<div class="load-progress-wrap hidden" id="loadProgress"><div class="load-progress-bar" id="loadProgressBar"></div></div>
 
 <!-- HEADER -->
 <header class="header">
@@ -507,20 +531,57 @@ function hideStatus() {
 }
 
 // ── LOAD DATA ────────────────────────────────────────────────────────
+function setProgress(pct) {
+  const wrap = document.getElementById('loadProgress');
+  const bar  = document.getElementById('loadProgressBar');
+  if (pct === 0) { wrap.classList.remove('hidden'); bar.style.width = '0%'; }
+  else if (pct >= 100) {
+    bar.style.width = '100%';
+    setTimeout(() => wrap.classList.add('hidden'), 500);
+  } else { bar.style.width = pct + '%'; }
+}
+
 async function loadData() {
   const btn = document.getElementById('btnRefresh');
   btn.classList.add('spinning');
   btn.disabled = true;
+  setProgress(0);
+  setTimeout(() => setProgress(15), 100);
   showStatus('loading', 'Fetching latest data from Google Sheets…');
 
   try {
-    // Use a CORS proxy to fetch the CSV
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_URL);
-    const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error('Network error: ' + res.status);
-    const json = await res.json();
-    const csvText = json.contents;
+    // Try multiple CORS proxies in sequence
+    let csvText = null;
+    const proxies = [
+      async () => {
+        const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(SHEET_URL));
+        if (!r.ok) throw new Error(r.status);
+        return await r.text();
+      },
+      async () => {
+        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_URL));
+        if (!r.ok) throw new Error(r.status);
+        const j = await r.json();
+        return j.contents;
+      },
+      async () => {
+        const r = await fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(SHEET_URL));
+        if (!r.ok) throw new Error(r.status);
+        return await r.text();
+      },
+      async () => {
+        // Direct fetch last (works if sheet is truly public)
+        const r = await fetch(SHEET_URL, { mode: 'no-cors' });
+        if (!r.ok && r.type !== 'opaque') throw new Error(r.status);
+        return await r.text();
+      }
+    ];
+    for (const proxy of proxies) {
+      try { csvText = await proxy(); if (csvText && csvText.length > 100) break; } catch(e) { continue; }
+    }
+    if (!csvText || csvText.length < 100) throw new Error('All proxies failed — check sheet is published publicly');
 
+    setProgress(40);
     const allData = parseCSV(csvText);
 
     // Row 0 = summary row (351500...), Row 1 = headers, Row 2+ = data
@@ -533,10 +594,14 @@ async function loadData() {
     const dataRows = allData.slice(headerRow + 1).filter(r => r[0] === 'Deepak' && r.length > 5);
     allRows = dataRows;
 
+    setProgress(65);
     updateKPIs(dataRows);
+    setProgress(80);
     applyFilters();
     updateVendorSummary(dataRows);
+    setProgress(90);
     updateSignalSummary(dataRows);
+    setProgress(100);
 
     const now = new Date();
     document.getElementById('lastUpdated').textContent =
@@ -545,6 +610,7 @@ async function loadData() {
     showStatus('success', `Loaded ${dataRows.length} Deepak orders successfully.`);
     setTimeout(hideStatus, 3000);
   } catch (err) {
+    setProgress(100);
     showStatus('error', 'Failed to load data: ' + err.message + ' — Check internet connection or sheet permissions.');
   } finally {
     btn.classList.remove('spinning');
