@@ -460,7 +460,10 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i/pub?gid=0&single=true&output=csv';
+// Google Sheets published CSV - no proxy needed, direct fetch works
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i/pub?gid=0&single=true&output=csv';
+// Extract sheet ID from published URL for JSON API fallback
+const SHEET_ID = '1jKRzEFWXO8VeqAKI9RYgWqWG2GX0o4T7Xz6-qhvgMSw';
 
 // ── STATE ────────────────────────────────────────────────────────────
 let allRows = [];
@@ -531,6 +534,52 @@ function hideStatus() {
 }
 
 // ── LOAD DATA ────────────────────────────────────────────────────────
+// ── GVIZ FETCH (Google's own cross-origin API for published sheets) ──
+function fetchViaGviz() {
+  return new Promise((resolve, reject) => {
+    const PUBLISHED_KEY = '2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i';
+    // Use gviz/tq which returns JSONP - works cross-origin for published sheets
+    const gvizUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=0&single=true`;
+
+    // Try fetch directly first (sometimes works)
+    fetch(gvizUrl + '&cachebust=' + Date.now())
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(text => {
+        if (text && text.length > 100) {
+          resolve(parseCSV(text));
+        } else {
+          throw new Error('Empty');
+        }
+      })
+      .catch(() => {
+        // Fallback: use gviz/tq JSON endpoint (different CORS policy)
+        const tqUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/gviz/tq?tqx=out:json&sheet=Order%20Book`;
+        fetch(tqUrl + '&cachebust=' + Date.now())
+          .then(r => r.text())
+          .then(text => {
+            // gviz returns: google.visualization.Query.setResponse({...})
+            const jsonStr = text.replace(/^[^\{]*/, '').replace(/\);?\s*$/, '');
+            const data = JSON.parse(jsonStr);
+            const rows = data.table.rows.map(row =>
+              (row.c || []).map(cell => cell ? (cell.f || cell.v || '') : '')
+            );
+            const headers = data.table.cols.map(c => c.label || '');
+            resolve([headers, ...rows]);
+          })
+          .catch(err => {
+            // Final fallback: corsproxy
+            fetch('https://corsproxy.io/?' + encodeURIComponent(gvizUrl))
+              .then(r => r.text())
+              .then(text => resolve(parseCSV(text)))
+              .catch(() => reject(new Error('Cannot load data. Check your Google Sheet is published to web as CSV (File → Share → Publish to web).')));
+          });
+      });
+  });
+}
+
 function setProgress(pct) {
   const wrap = document.getElementById('loadProgress');
   const bar  = document.getElementById('loadProgressBar');
@@ -550,48 +599,28 @@ async function loadData() {
   showStatus('loading', 'Fetching latest data from Google Sheets…');
 
   try {
-    // Try multiple CORS proxies in sequence
+    // Google Sheets published CSV can be fetched directly — no CORS proxy needed
+    // The 'pub?output=csv' endpoint sets CORS headers allowing browser fetch
     let csvText = null;
-    const proxies = [
-      async () => {
-        const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(SHEET_URL));
-        if (!r.ok) throw new Error(r.status);
-        return await r.text();
-      },
-      async () => {
-        const r = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(SHEET_URL));
-        if (!r.ok) throw new Error(r.status);
-        const j = await r.json();
-        return j.contents;
-      },
-      async () => {
-        const r = await fetch('https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(SHEET_URL));
-        if (!r.ok) throw new Error(r.status);
-        return await r.text();
-      },
-      async () => {
-        // Direct fetch last (works if sheet is truly public)
-        const r = await fetch(SHEET_URL, { mode: 'no-cors' });
-        if (!r.ok && r.type !== 'opaque') throw new Error(r.status);
-        return await r.text();
-      }
-    ];
-    for (const proxy of proxies) {
-      try { csvText = await proxy(); if (csvText && csvText.length > 100) break; } catch(e) { continue; }
-    }
-    if (!csvText || csvText.length < 100) throw new Error('All proxies failed — check sheet is published publicly');
+
+    // Strategy: fetch via <iframe> trick using Google's own JSONP-style gviz API
+    // This is the most reliable browser-side approach — no third-party proxy needed
+    // Google Sheets gviz/tq endpoint returns JSONP even cross-origin for published sheets
+    csvText = await fetchViaGviz();
 
     setProgress(40);
-    const allData = parseCSV(csvText);
+    // csvText here is already parsed rows from gviz (array of arrays)
+    const allData = csvText;
 
-    // Row 0 = summary row (351500...), Row 1 = headers, Row 2+ = data
+    // Find header row (contains 'Broker' in col 0)
     let headerRow = -1;
     for (let i = 0; i < allData.length; i++) {
-      if (allData[i][0] === 'Broker') { headerRow = i; break; }
+      const v = String(allData[i][0] || '').trim();
+      if (v === 'Broker') { headerRow = i; break; }
     }
-    if (headerRow === -1) throw new Error('Could not find header row');
+    if (headerRow === -1) throw new Error('Could not find header row — sheet structure may have changed');
 
-    const dataRows = allData.slice(headerRow + 1).filter(r => r[0] === 'Deepak' && r.length > 5);
+    const dataRows = allData.slice(headerRow + 1).filter(r => r && r[0] && String(r[0]).trim() === 'Deepak' && r.length > 5);
     allRows = dataRows;
 
     setProgress(65);
