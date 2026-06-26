@@ -460,10 +460,11 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────
-// Google Sheets published CSV - no proxy needed, direct fetch works
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i/pub?gid=0&single=true&output=csv';
-// Extract sheet ID from published URL for JSON API fallback
-const SHEET_ID = '1jKRzEFWXO8VeqAKI9RYgWqWG2GX0o4T7Xz6-qhvgMSw';
+
+// ── EMBEDDED SNAPSHOT (loaded instantly, no network needed) ──────────
+// This is the latest data from the CSV. Click Refresh to try fetching live data.
+const EMBEDDED_DATA = [["Deepak", "JOPLLTRW2015", "SRT", "27-02-2026", "", "PRAGATI", "JOPLLTRW2015", "", "2000", "27-04-2026", "59", "2000", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "03 Plan", "02 Critical", "5", "130", "4000", "3300", "3800", "Prghati", "JOPLLTRW2015"], ["Deepak", "JOPLLTRW2017", "SRT", "06-02-2026", "", "PRAGATI", "JOPLLTRW2017", "", "1500", "24-04-2026", "77", "1500", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "4", "3", "3500", "4400", "4000", "", "JOPLLTRW2017"], ["Deepak", "JOPLST243", "SRT", "26-02-2026", "", "PRAGATI", "JOPLST243", "", "2000", "27-04-2026", "60", "2000", "0", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "01 Very Urgent", "01 Very Urgent", "6", "2", "5100", "3000", "4000", "", "JOPLST243"], ["Deepak", "JOPLVSMRW4250", "SRT", "27-03-2026", "", "PRAGATI", "JOPLVSMRW4250", "", "2000", "19-05-2026", "53", "2000", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "01 Very Urgent", "7", "89", "3500", "4400", "4000", "", "JOPLVSMRW4250"], ["Deepak", "JOPLST218", "SRT", "13-04-2026", "", "PRAGATI", "JOPLST218", "", "6000", "07-05-2026", "24", "6000", "0", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "02 Critical", "01 Very Urgent", "8", "85", "21500", "13500", "14500", "", "JOPLST218"], ["Deepak", "JOPLST268", "SRT", "13-04-2026", "", "PRAGATI", "JOPLST268", "", "1200", "09-05-2026", "26", "1200", "0", "", "", "", "", "OutHouse", "Skd-St", "Diamond C", "05 Excess", "01 Very Urgent", "46", "189", "6200", "0", "0", "", "JOPLST268"], ["Deepak", "JOPLST269", "SRT", "13-04-2026", "", "PRAGATI", "JOPLST269", "", "500", "07-05-2026", "24", "500", "0", "", "", "", "", "OutHouse", "Skd-St", "Platinum A", "03 Plan", "01 Very Urgent", "49", "138", "2600", "0", "0", "", "JOPLST269"], ["Deepak", "JOPLST703", "SRT", "13-04-2026", "", "PRAGATI", "JOPLST703", "", "600", "07-05-2026", "24", "600", "0", "", "", "", "", "OutHouse", "Tunics-St", "Diamond C", "02 Critical", "02 Critical", "36", "106", "1300", "0", "0", "", "JOPLST703"], ["Deepak", "JOPLPDPRW1058", "SRT", "16-04-2026", "", "PRAGATI", "JOPLPDPRW1058", "", "2500", "11-05-2026", "25", "2500", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "02 Critical", "1", "86", "5500", "6100", "7500", "", "JOPLPDPRW1058"], ["Deepak", "JOPLST218", "SRT", "21-04-2026", "", "PRAGATI", "JOPLST218", "", "6000", "15-06-2026", "55", "6000", "0", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "02 Critical", "01 Very Urgent", "8", "85", "", "", "", "", "JOPLST218"], ["Deepak", "JOPLVSRW4147", "SRT", "11-04-2026", "", "PRAGATI", "JOPLVSRW4147", "", "1200", "16-06-2026", "66", "1200", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "01 Very Urgent", "3", "87", "", "", "", "", "JOPLVSRW4147"], ["Deepak", "JOPLVSRW4005", "SRT", "11-04-2026", "", "PRAGATI", "JOPLVSRW4005", "", "2000", "06-06-2026", "56", "2000", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "2", "1", "", "", "", "", "JOPLVSRW4005"], ["Deepak", "JOPLVSMRW3988", "SRT", "24-04-2026", "", "Maruti", "JOPLVSMRW3988", "", "3000", "22-05-2026", "28", "3000", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond B", "02 Critical", "01 Very Urgent", "10", "88", "", "", "", "", "JOPLVSMRW3988"], ["Deepak", "JOPLLTRW2007", "SRT", "11-04-2026", "", "PRAGATI", "JOPLLTRW2007", "", "3000", "05-06-2026", "55", "3000", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "13", "129", "", "", "", "", "JOPLLTRW2007"], ["Deepak", "JOPLVSRW5193", "SRT", "24-04-2026", "", "Maruti", "JOPLVSRW5193", "", "1500", "22-05-2026", "28", "1500", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "18", "128", "", "", "", "", "JOPLVSRW5193"], ["Deepak", "JOPLVSRW5202", "SRT", "11-04-2026", "", "PRAGATI", "JOPLVSRW5202", "", "1500", "", "", "", "1500", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "01 Very Urgent", "01 Very Urgent", "24", "13", "", "", "", "", "JOPLVSRW5202"], ["Deepak", "JOPLPDPRW1006", "SRT", "24-04-2026", "", "Maruti", "JOPLPDPRW1006", "", "1500", "29-05-2026", "35", "1500", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "01 Very Urgent", "01 Very Urgent", "21", "10", "", "", "", "", "JOPLPDPRW1006"], ["Deepak", "JOPLJPR512", "SRT", "11-04-2026", "", "PRAGATI", "JOPLJPR512", "", "500", "08-05-2026", "27", "500", "0", "", "", "", "", "OutHouse", "Kurta With Pant", "Platinum A", "02 Critical", "02 Critical", "76", "109", "2400", "0", "0", "", "JOPLJPR512"], ["Deepak", "JOPLJPR521", "SRT", "12-04-2026", "", "Maruti", "JOPLJPR521", "", "500", "29-05-2026", "47", "500", "0", "", "", "", "", "OutHouse", "Kurta With Pant", "Platinum C", "03 Plan", "02 Critical", "145", "147", "", "", "", "", "JOPLJPR521"], ["Deepak", "JOPLVSRW4079", "SRT", "14-04-2026", "", "PRAGATI", "JOPLVSRW4079", "", "2400", "16-06-2026", "63", "2400", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "05 Excess", "01 Very Urgent", "15", "211", "", "", "", "", "JOPLVSRW4079"], ["Deepak", "JOPLVSRW4031", "SRT", "14-04-2026", "", "PRAGATI", "JOPLVSRW4031", "", "1200", "23-06-2026", "70", "1200", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum B", "02 Critical", "02 Critical", "43", "107", "", "", "", "", "JOPLVSRW4031"], ["Deepak", "JOPLVSRW5203", "SRT", "19-04-2026", "", "PRAGATI", "JOPLVSRW5203", "", "1200", "16-06-2026", "58", "1200", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "01 Very Urgent", "01 Very Urgent", "48", "5", "", "", "", "", "JOPLVSRW5203"], ["Deepak", "JOPLVSRW4147", "SRT", "21-04-2026", "", "PRAGATI", "JOPLVSRW4147", "", "1200", "02-06-2026", "42", "1200", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "01 Very Urgent", "3", "87", "", "", "", "", "JOPLVSRW4147"], ["Deepak", "JOPLPDPRW1006", "SRT", "10-05-2026", "", "Maruti", "JOPLPDPRW1006", "", "1200", "", "", "", "1200", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "01 Very Urgent", "01 Very Urgent", "21", "10", "", "", "", "", "JOPLVSRW5241"], ["Deepak", "JOPLVSMRW3988", "SRT", "10-05-2026", "", "Maruti", "JOPLVSMRW3988", "", "1200", "03-06-2026", "24", "1200", "0", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond B", "02 Critical", "01 Very Urgent", "10", "88", "", "", "", "", "JOPLVSRW5241"], ["Deepak", "JOPLVSRW4096", "SRT", "10-05-2026", "", "PRAGATI", "JOPLVSRW4096", "", "1600", "", "", "", "1600", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "05 Excess", "01 Very Urgent", "53", "188", "", "", "", "", "JOPLVSRW5241"], ["Deepak", "JOPLVSRW4005", "SRT", "10-05-2026", "", "PRAGATI", "JOPLVSRW4005", "", "2500", "", "", "", "2500", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "2", "1", "", "", "", "", ""], ["Deepak", "JOPLST218", "SRT", "15-05-2026", "", "PRAGATI", "JOPLST218", "", "1500", "", "", "", "1500", "35", "35", "31", "", "OutHouse", "Skd-St", "Diamond A", "02 Critical", "01 Very Urgent", "8", "85", "", "", "", "", ""], ["Deepak", "JOPLVSRW5193", "SRT", "10-05-2026", "", "Maruti", "JOPLVSRW5193", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "18", "128", "", "", "", "", ""], ["Deepak", "JOPLST284", "SRT", "15-05-2026", "", "PRAGATI", "JOPLST284", "", "250", "", "", "", "250", "", "", "", "", "OutHouse", "Skd-St", "New Listing", "01 Very Urgent", "01 Very Urgent", "131", "15", "", "", "", "", ""], ["Deepak", "JOPLLTRW2017", "SRT", "23-05-2026", "", "PRAGATI", "JOPLLTRW2017", "", "7000", "", "", "", "7000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "4", "3", "", "", "", "", ""], ["Deepak", "JOPLPDPRW1058", "SRT", "23-05-2026", "", "PRAGATI", "JOPLPDPRW1058", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "02 Critical", "1", "86", "", "", "", "", ""], ["Deepak", "JOPLVSRW4002", "SRT", "23-05-2026", "", "Maruti", "JOPLVSRW4002", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond B", "01 Very Urgent", "01 Very Urgent", "9", "4", "", "", "", "", ""], ["Deepak", "JOPLVSRW4147", "SRT", "23-05-2026", "", "Maruti", "JOPLVSRW4147", "", "2500", "", "", "", "2500", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "01 Very Urgent", "3", "87", "", "", "", "", ""], ["Deepak", "JOPLVSRW5202", "SRT", "23-05-2026", "", "PRAGATI", "JOPLVSRW5202", "", "1500", "", "", "", "1500", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "01 Very Urgent", "01 Very Urgent", "24", "13", "", "", "", "", ""], ["Deepak", "JOPLLTRW2015", "SRT", "23-05-2026", "", "Maruti", "JOPLLTRW2015", "", "3000", "", "", "", "3000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "03 Plan", "02 Critical", "5", "130", "", "", "", "", ""], ["Deepak", "JOPLST243", "SRT", "23-05-2026", "", "PRAGATI", "JOPLST243", "", "1200", "", "", "", "1200", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "01 Very Urgent", "01 Very Urgent", "6", "2", "", "", "", "", ""], ["Deepak", "JOPLVSMRW3988", "SRT", "23-05-2026", "", "Maruti", "JOPLVSMRW3988", "", "4000", "", "", "", "4000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond B", "02 Critical", "01 Very Urgent", "10", "88", "", "", "", "", ""], ["Deepak", "JOPLVSRW5193", "SRT", "23-05-2026", "", "Maruti", "JOPLVSRW5193", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "18", "128", "", "", "", "", ""], ["Deepak", "JOPLVSRW4005", "SRT", "23-05-2026", "", "PRAGATI", "JOPLVSRW4005", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "2", "1", "", "", "", "", ""], ["Deepak", "JOPLVSRW4114", "SRT", "23-05-2026", "", "Maruti", "JOPLVSRW4114", "", "1200", "", "", "", "1200", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "05 Excess", "02 Critical", "14", "220", "", "", "", "", ""], ["Deepak", "JOPLVSRW5203", "SRT", "23-05-2026", "", "PRAGATI", "JOPLVSRW5203", "", "3000", "", "", "", "3000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "01 Very Urgent", "01 Very Urgent", "48", "5", "", "", "", "", ""], ["Deepak", "JOPLLTRW2007", "SRT", "23-05-2026", "", "Maruti", "JOPLLTRW2007", "", "1200", "", "", "", "1200", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "13", "129", "", "", "", "", ""], ["Deepak", "JOPLPDPRW1006", "SRT", "23-05-2026", "", "Maruti", "JOPLPDPRW1006", "", "1200", "", "", "", "1200", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Platinum A", "01 Very Urgent", "01 Very Urgent", "21", "10", "", "", "", "", ""], ["Deepak", "JOPLST269", "SRT", "29-05-2026", "", "PRAGATI", "JOPLST269", "", "500", "", "", "", "500", "", "", "", "", "OutHouse", "Skd-St", "Platinum A", "03 Plan", "01 Very Urgent", "49", "138", "", "", "", "", ""], ["Deepak", "JOPLST283", "SRT", "29-05-2026", "", "PRAGATI", "JOPLST283", "", "250", "", "", "", "250", "", "", "", "", "OutHouse", "skd-st", "New Listing", "01 Very Urgent", "01 Very Urgent", "127", "18", "", "", "", "", ""], ["Deepak", "JOPLST601", "SRT", "29-05-2026", "", "PRAGATI", "JOPLST601", "", "100", "", "", "", "100", "", "", "", "", "OutHouse", "Dress 42 \"", "Slow Moving", "01 Very Urgent", "01 Very Urgent", "115", "72", "", "", "", "", ""], ["Deepak", "JOPLVSRW5203", "SRT", "16-6-2026", "", "Maruti", "JOPLVSRW5203", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "01 Very Urgent", "01 Very Urgent", "48", "5", "", "", "", "", ""], ["Deepak", "JOPLVSRW5193", "SRT", "16-06-2026", "", "Maruti", "JOPLVSRW5193", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "18", "128", "", "", "", "", ""], ["Deepak", "JOPLST218", "SRT", "16-6-2026", "", "Maruti", "JOPLST218", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "02 Critical", "01 Very Urgent", "8", "85", "", "", "", "", ""], ["Deepak", "JOPLST218", "SRT", "16-6-2026", "", "PRAGATI", "JOPLST218", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "02 Critical", "01 Very Urgent", "8", "85", "", "", "", "", ""], ["Deepak", "JOPLLTRW2018", "SRT", "16-6-2026", "", "Maruti", "JOPLLTRW2018", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "02 Critical", "02 Critical", "39", "97", "", "", "", "", ""], ["Deepak", "JOPLPDPRW1058", "SRT", "16-6-2026", "", "Maruti", "JOPLPDPRW1058", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "02 Critical", "1", "86", "", "", "", "", ""], ["Deepak", "JOPLST243", "SRT", "16-6-2026", "", "Maruti", "JOPLST243", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Skd-St", "Diamond A", "01 Very Urgent", "01 Very Urgent", "6", "2", "", "", "", "", ""], ["Deepak", "JOPLVSMRW4281", "SRT", "16-6-2026", "", "Maruti", "JOPLVSMRW4281", "", "4000", "", "", "", "4000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "01 Very Urgent", "01 Very Urgent", "12", "6", "", "", "", "", ""], ["Deepak", "JOPLVSRW4002", "SRT", "16-6-2026", "", "Maruti", "JOPLVSRW4002", "", "4000", "", "", "", "4000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond B", "01 Very Urgent", "01 Very Urgent", "9", "4", "", "", "", "", ""], ["Deepak", "JOPLLTRW2017", "SRT", "16-6-2026", "", "PRAGATI", "JOPLLTRW2017", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "01 Very Urgent", "01 Very Urgent", "4", "3", "", "", "", "", ""], ["Deepak", "JOPLLTRW2015", "SRT", "16-6-2026", "", "PRAGATI", "JOPLLTRW2015", "", "3000", "", "", "", "3000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "03 Plan", "02 Critical", "5", "130", "", "", "", "", ""], ["Deepak", "JOPLVSRW4147", "SRT", "16-6-2026", "", "PRAGATI", "JOPLVSRW4147", "", "5000", "", "", "", "5000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond A", "02 Critical", "01 Very Urgent", "3", "87", "", "", "", "", ""], ["Deepak", "JOPLLTRW2007", "SRT", "16-6-2026", "", "PRAGATI", "JOPLLTRW2007", "", "2000", "", "", "", "2000", "", "", "", "", "OutHouse", "Rw Salwar Suit", "Diamond C", "03 Plan", "01 Very Urgent", "13", "129", "", "", "", "", ""]];
 
 // ── STATE ────────────────────────────────────────────────────────────
 let allRows = [];
@@ -534,50 +535,32 @@ function hideStatus() {
 }
 
 // ── LOAD DATA ────────────────────────────────────────────────────────
-// ── GVIZ FETCH (Google's own cross-origin API for published sheets) ──
-function fetchViaGviz() {
-  return new Promise((resolve, reject) => {
-    const PUBLISHED_KEY = '2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i';
-    // Use gviz/tq which returns JSONP - works cross-origin for published sheets
-    const gvizUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/pub?output=csv&gid=0&single=true`;
+// ── LIVE FETCH with multiple fallbacks ──────────────────────────────
+async function fetchLiveData() {
+  const KEY = '2PACX-1vQUsvBi2P7UlPymqL_OH9z5sTY7zb7WTdaNFIAGkyla-TqW_GN7HI-5FV9d1fDJunXuGzVeOuJU8L_i';
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/e/${KEY}/pub?output=csv&gid=0&single=true`;
+  const bust = '&t=' + Date.now();
 
-    // Try fetch directly first (sometimes works)
-    fetch(gvizUrl + '&cachebust=' + Date.now())
-      .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(text => {
-        if (text && text.length > 100) {
-          resolve(parseCSV(text));
-        } else {
-          throw new Error('Empty');
-        }
-      })
-      .catch(() => {
-        // Fallback: use gviz/tq JSON endpoint (different CORS policy)
-        const tqUrl = `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_KEY}/gviz/tq?tqx=out:json&sheet=Order%20Book`;
-        fetch(tqUrl + '&cachebust=' + Date.now())
-          .then(r => r.text())
-          .then(text => {
-            // gviz returns: google.visualization.Query.setResponse({...})
-            const jsonStr = text.replace(/^[^\{]*/, '').replace(/\);?\s*$/, '');
-            const data = JSON.parse(jsonStr);
-            const rows = data.table.rows.map(row =>
-              (row.c || []).map(cell => cell ? (cell.f || cell.v || '') : '')
-            );
-            const headers = data.table.cols.map(c => c.label || '');
-            resolve([headers, ...rows]);
-          })
-          .catch(err => {
-            // Final fallback: corsproxy
-            fetch('https://corsproxy.io/?' + encodeURIComponent(gvizUrl))
-              .then(r => r.text())
-              .then(text => resolve(parseCSV(text)))
-              .catch(() => reject(new Error('Cannot load data. Check your Google Sheet is published to web as CSV (File → Share → Publish to web).')));
-          });
-      });
-  });
+  const tries = [
+    () => fetch(CSV_URL + bust).then(r => { if(!r.ok) throw r.status; return r.text(); }),
+    () => fetch('https://corsproxy.io/?' + encodeURIComponent(CSV_URL + bust)).then(r => r.text()),
+    () => fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(CSV_URL)).then(r=>r.json()).then(j=>j.contents),
+    () => fetch('https://thingproxy.freeboard.io/fetch/' + CSV_URL).then(r=>r.text()),
+  ];
+
+  for (const t of tries) {
+    try {
+      const text = await t();
+      if (!text || text.length < 200 || text.includes('<html')) continue;
+      const parsed = parseCSV(text);
+      // find header row
+      const hi = parsed.findIndex(r => r[0] === 'Broker');
+      if (hi === -1) continue;
+      const deepakRows = parsed.slice(hi+1).filter(r => r[0] && r[0].trim() === 'Deepak' && r.length > 5);
+      if (deepakRows.length > 0) return { rows: deepakRows, live: true };
+    } catch(e) { continue; }
+  }
+  return null; // all failed
 }
 
 function setProgress(pct) {
@@ -631,10 +614,6 @@ async function loadData() {
     setProgress(90);
     updateSignalSummary(dataRows);
     setProgress(100);
-
-    const now = new Date();
-    document.getElementById('lastUpdated').textContent =
-      'Updated ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     showStatus('success', `Loaded ${dataRows.length} Deepak orders successfully.`);
     setTimeout(hideStatus, 3000);
